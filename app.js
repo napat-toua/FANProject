@@ -8,7 +8,7 @@ const mongoose = require('mongoose');
 const passport = require('passport');
 
 var indexRouter = require('./routes/index');
-var usersRouter = require('./routes/users');
+var usersRouter = require('./routes/user');
 var brandRouter = require('./routes/brand');
 
 const config = require('./config/index')
@@ -33,6 +33,6 @@ app.use(passport.initialize())
 
 app.use('/', indexRouter);
 app.use('/users', usersRouter);
-app.use('/brand', brandRouter);
+app.use('/brands', brandRouter);
 
 module.exports = app;
