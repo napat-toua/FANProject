@@ -35,4 +35,5 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/brands', brandRouter);
 
+app.use(errorHandler)
 module.exports = app;

@@ -1,4 +1,5 @@
 const User = require('../models/user')
+const { validationResult } = require('express-validator')
 
 exports.index = async(req, res, next) => {
 
@@ -16,7 +17,7 @@ exports.show = async(req, res, next) => {
         const { id } = req.params
 
         const user = await User.findOne({
-            _id: id /*req.params.id*/
+            _id: id
         })
 
         if(!user){
@@ -38,20 +39,32 @@ exports.show = async(req, res, next) => {
 }
 
 exports.register = async(req, res, next) => {
+    try{
+        const { name, email, password } = req.body
 
-    const { name, email, password } = req.body
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            const error = new Error("Error: Insert Data Invalid")
+            error.statusCode = 422;
+            error.validation = errors.array()
+            throw error;
+        }
 
-    let user = new User({
-        name: name,
-        email: email,
-        password: password
-    });
+        let user = new User({
+            name: name,
+            email: email,
+            password: password
+        });
 
-    await user.save()
+        await user.save()
 
-    res.status(200).json({
-        message: name + ' data has been added',
-    })
+        res.status(200).json({
+            message: name + ' data has been added',
+        })
+    }
+    catch ( error ) {
+        next( error )
+      }
 }
 
 exports.drop = async(req, res, next) => {
@@ -93,6 +106,14 @@ exports.update = async(req, res, next) => {
         if (!existId){
             const error = new Error("Error: User ID not found.")
             error.statusCode = 400
+            throw error;
+        }
+
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            const error = new Error("Error: Insert Data Invalid")
+            error.statusCode = 422;
+            error.validation = errors.array()
             throw error;
         }
 
