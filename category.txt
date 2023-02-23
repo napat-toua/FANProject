@@ -1,0 +1,13 @@
+พัดลมตั้งโต๊ะ           desk fan
+พัดลมพกพา            portable fan
+พัดลมสไลด์            slide fan
+พัดลมอุตสาหกรรม           industrial fan
+พัดลมติดผนัง           wall fan
+พัดลมติดเพดาน         ceiling fan
+พัดลมดูดอากาศผนัง          wall exhaust fan
+พัดลมไอเย็น           cooling fan
+พัดลมตั้งพื้น            floor fan
+พัดลมดูดอากาศเพดาน            ceiling exhaust fan
+พัดลมดูดอากาศกระจก            glass exhaust fan
+พัดลมพวงหรีด          wreath fan
+พัดลมทาวเวอร์         tower fan
