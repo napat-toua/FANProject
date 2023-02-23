@@ -11,6 +11,7 @@ var indexRouter = require('./routes/index');
 var usersRouter = require('./routes/user');
 var brandRouter = require('./routes/brand');
 var categoryRouter = require('./routes/category');
+var productRouter = require('./routes/product');
 
 const config = require('./config/index')
 
@@ -36,6 +37,7 @@ app.use('/', indexRouter);
 app.use('/users', usersRouter);
 app.use('/brands', brandRouter);
 app.use('/categorys', categoryRouter);
+app.use('/products', productRouter);
 
 app.use(errorHandler)
 module.exports = app;
