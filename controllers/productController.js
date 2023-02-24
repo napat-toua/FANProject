@@ -2,7 +2,7 @@ const Product = require('../models/product')
 
 exports.index = async(req, res, next) => {
 
-    const product = await Product.find().sort({_id:1})
+    const product = await Product.find().populate('brand').populate('category') //brand = products collection: field brand
     
     res.status(200).json({
         data: product
@@ -11,12 +11,14 @@ exports.index = async(req, res, next) => {
 
 exports.insert = async(req, res, next) => {
 
-    const { name, price, describe } = req.body
+    const { name, price, describe, brand, category } = req.body
 
     let product = new Product({
         name: name,
         price: price, 
-        describe: describe
+        describe: describe, 
+        brand: brand, 
+        category, category
     });
 
     await product.save()
