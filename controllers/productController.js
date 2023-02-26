@@ -2,8 +2,27 @@ const Product = require('../models/product')
 
 exports.index = async(req, res, next) => {
 
-    const product = await Product.find().populate('brand').populate('category') //brand = products collection: field brand
+    const products = await Product.find().populate('brand').populate('category') //brand = products collection: field brand
     
+    const product = products.map((products, index)=>{
+        return {
+            _id: products._id,
+            name: products.name,
+            price: products.price, 
+            describe: products.describe, 
+            brand: {
+                brandID: products.brand._id,
+                brandName: products.brand.name,
+                brandSite: products.brand.site
+            }, 
+            category: {
+                categoryID: products.category._id,
+                categoryName: products.category.name,
+                categoryDescribe: products.category.describe
+            }
+        }
+    })
+
     res.status(200).json({
         data: product
     })
@@ -13,7 +32,7 @@ exports.insert = async(req, res, next) => {
 
     const { name, price, describe, brand, category } = req.body
 
-    let product = new Product({
+    let products = new Product({
         name: name,
         price: price, 
         describe: describe, 
@@ -21,10 +40,10 @@ exports.insert = async(req, res, next) => {
         category, category
     });
 
-    await product.save()
+    await products.save()
 
     res.status(200).json({
-        message: name + ' data has added',
+        message: name + ' Data has been added',
     })
 }
 
@@ -34,16 +53,33 @@ exports.show = async(req, res, next) => {
 
         const { id } = req.params
 
-        const product = await Product.findOne({
+        const products = await Product.findOne({
             _id: id /*req.params.id*/
-        })
+        }).populate('brand').populate('category')
 
-        if(!product){
+        if(!products){
             const error = new Error("Error: Product ID not found")
             error.statusCode = 400
             throw error;
         }
         else{
+            const product = {
+                _id: products._id,
+                name: products.name,
+                price: products.price, 
+                describe: products.describe, 
+                brand: {
+                    brandID: products.brand._id,
+                    brandName: products.brand.name,
+                    brandSite: products.brand.site
+                }, 
+                category: {
+                    categoryID: products.category._id,
+                    categoryName: products.category.name,
+                    categoryDescribe: products.category.describe
+                }
+                }
+
             res.status(200).json({
                 data: product
             })
@@ -62,21 +98,24 @@ exports.drop = async(req, res, next) => {
 
         const { id } = req.params
 
-        const product = await Product.deleteOne({
+        const product = await Product.findOne({
+            _id: id
+        })
+
+        const productDelete = await Product.deleteOne({
             _id: id /*req.params.id*/
         })
 
-        if (product.deletedCount === 0) {
-            const error = new Error("Error: Can\'t delete data / Company data not found.")
+        if (productDelete.deletedCount === 0) {
+            const error = new Error("Error: Can\'t delete data / Product data not found.")
             error.statusCode = 400
             throw error;
         }
         
         res.status(200).json({
-            message: 'Data deleted'
+            message: product.name + ' Data has been delete'
         })
         
-
     } catch ( error ){
         next( error )
     }
@@ -98,14 +137,14 @@ exports.update = async(req, res, next) => {
             throw error;
         }
 
-        const product = await Product.updateOne({ _id : id }, {
+        const products = await Product.updateOne({ _id : id }, {
             name: name,
             price: price, 
             describe: describe
         })
 
         res.status(200).json({
-            message: name + ' data has modified'
+            message: name + ' Data has been modified'
         })
 
     } catch ( error ){

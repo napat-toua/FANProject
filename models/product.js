@@ -7,11 +7,7 @@ const productSchema = new Schema({
     describe: String,
     brand: { type: Schema.Types.ObjectId, ref: 'Brands' },
     category: { type: Schema.Types.ObjectId, ref: 'Categorys' }
-  }, { 
-    collection: "products", 
-    versionKey: false,
-    toJSON: {virtuals: true}
-  });
+  }, { collection: "products", versionKey: false });
 
 const product = mongoose.model("Products", productSchema)
 

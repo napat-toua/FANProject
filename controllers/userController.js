@@ -3,10 +3,10 @@ const { validationResult } = require('express-validator')
 
 exports.index = async(req, res, next) => {
 
-    const user = await User.find().sort({_id:1})
+    const users = await User.find().sort({_id:1})
     
     res.status(200).json({
-        data: user
+        data: users
     })
 }
 
@@ -16,18 +16,18 @@ exports.show = async(req, res, next) => {
 
         const { id } = req.params
 
-        const user = await User.findOne({
+        const users = await User.findOne({
             _id: id
         })
 
-        if(!user){
+        if(!users){
             const error = new Error("Error: User ID not found")
             error.statusCode = 400
-            throw user;
+            throw users;
         }
         else{
             res.status(200).json({
-                data: user
+                data: users
             })
         }
 
@@ -50,16 +50,16 @@ exports.register = async(req, res, next) => {
             throw error;
         }
 
-        let user = new User({
+        let users = new User({
             name: name,
             email: email,
             password: password
         });
 
-        await user.save()
+        await users.save()
 
         res.status(200).json({
-            message: name + ' data has been added',
+            message: name + ' Data has been added',
         })
     }
     catch ( error ) {
@@ -73,18 +73,22 @@ exports.drop = async(req, res, next) => {
 
         const { id } = req.params
 
-        const user = await User.deleteOne({
+        const user = await Category.findOne({
+            _id: id
+        })
+
+        const userDelete = await User.deleteOne({
             _id: id /*req.params.id*/
         })
 
-        if (user.deletedCount === 0) {
-            const error = new Error("Error: Can\'t delete data / Company data not found.")
+        if (userDelete.deletedCount === 0) {
+            const error = new Error("Error: Can\'t delete data / User data not found.")
             error.statusCode = 400
             throw error;
         }
         
         res.status(200).json({
-            message: 'Data has been deleted'
+            message: user.name + ' Data has been deleted'
         })
         
 
@@ -117,14 +121,14 @@ exports.update = async(req, res, next) => {
             throw error;
         }
 
-        const user = await User.updateOne({ _id : id }, {
+        const users = await User.updateOne({ _id : id }, {
             name: name,
             email: email,
             password: password
         })
 
         res.status(200).json({
-            message: name + ' data has been modified'
+            message: name + ' Data has been modified'
         })
 
     } catch ( error ){

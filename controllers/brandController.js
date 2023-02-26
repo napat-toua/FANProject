@@ -2,8 +2,16 @@ const Brand = require('../models/brand')
 
 exports.index = async(req, res, next) => {
 
-    const brand = await Brand.find().sort({_id:1})
-    
+    const brands = await Brand.find().sort({_id:1})
+
+    const brand = brands.map((brands, index)=>{
+        return {
+            _id: brands._id,
+            name: brands.name,
+            site: brands.site
+        }
+    })
+
     res.status(200).json({
         data: brand
     })
@@ -13,15 +21,15 @@ exports.insert = async(req, res, next) => {
 
     const { name, site } = req.body
 
-    let brand = new Brand({
+    let brands = new Brand({
         name: name,
         site: site
     });
 
-    await brand.save()
+    await brands.save()
 
     res.status(200).json({
-        message: name + ' data has added',
+        message: name + ' Data has been added',
     })
 }
 
@@ -31,16 +39,22 @@ exports.show = async(req, res, next) => {
 
         const { id } = req.params
 
-        const brand = await Brand.findOne({
+        const brands = await Brand.findOne({
             _id: id /*req.params.id*/
         })
 
-        if(!brand){
+        if(!brands){
             const error = new Error("Error: Brand ID not found")
             error.statusCode = 400
             throw error;
         }
         else{
+            const brand = {
+                _id: brands._id,
+                name: brands.name,
+                site: brands.site
+            }
+
             res.status(200).json({
                 data: brand
             })
@@ -59,21 +73,24 @@ exports.drop = async(req, res, next) => {
 
         const { id } = req.params
 
-        const brand = await Brand.deleteOne({
+        const brand = await Brand.findOne({
+            _id: id
+        })
+
+        const brandDelete = await Brand.deleteOne({
             _id: id /*req.params.id*/
         })
 
-        if (brand.deletedCount === 0) {
-            const error = new Error("Error: Can\'t delete data / Company data not found.")
+        if (brandDelete.deletedCount === 0) {
+            const error = new Error("Error: Can\'t delete data / Brand data not found.")
             error.statusCode = 400
             throw error;
         }
         
         res.status(200).json({
-            message: 'Data deleted'
+            message: brand.name +' Data has been deleted'
         })
         
-
     } catch ( error ){
         next( error )
     }
@@ -85,6 +102,7 @@ exports.update = async(req, res, next) => {
     try{
 
         const { id } = req.params
+        
         const { name, site } = req.body
 
         const existId = await Brand.findOne({ _id : id })
@@ -95,13 +113,13 @@ exports.update = async(req, res, next) => {
             throw error;
         }
 
-        const brand = await Brand.updateOne({ _id : id }, {
+        const brands = await Brand.updateOne({ _id : id }, {
             name: name,
             site: site
         })
 
         res.status(200).json({
-            message: name + ' data has modified'
+            message: name + ' Data has been modified'
         })
 
     } catch ( error ){
