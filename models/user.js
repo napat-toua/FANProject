@@ -1,5 +1,6 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
+const bcrypt = require('bcrypt')
 
 const userSchema = new Schema({
     name: { type:String, require: true, trim: true},
@@ -8,6 +9,17 @@ const userSchema = new Schema({
     role: { type:String, default: 'member'}
 }, { collection: "users", versionKey: false});
 
-const brand = mongoose.model("Users", userSchema)
+userSchema.methods.encryptPassword = async function(password){
+    const salt = await bcrypt.genSalt(5)
+    const hashPassword = await bcrypt.hash(password, salt)
+    return hashPassword
+}
 
-module.exports = brand
+userSchema.methods.checkPassword = async function(password){
+  const isVaalid = await bcrypt.compare(password, this.password)
+  return isVaalid
+}
+
+const user = mongoose.model("User", userSchema)
+
+module.exports = user

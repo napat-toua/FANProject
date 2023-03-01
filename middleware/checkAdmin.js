@@ -6,7 +6,7 @@ module.exports.isAdmin = ( req, res, next ) => {
     }
     else{
         return res.status(403).json({
-            message: 'You do not have permission, reserve for Admin only'
+            message: 'Error: You do not have permission, reserve for Admin only'
         })
     }
 }
