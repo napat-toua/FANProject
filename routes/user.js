@@ -24,7 +24,7 @@ router.post('/', [
 router.post('/login', [
   body('email').not().isEmpty().withMessage("Email can't be Empty").isEmail().withMessage("Email format invalid"),
   body('password').not().isEmpty().withMessage("Password can't be Empty").isLength({ min: 5 }).withMessage("Password must contain at least 5 characters")
-], userController.login); 
+], userController.login);
 
 router.get('/:id', [passportJWT.isLogin, checkAdmin.isAdmin], userController.show);
 

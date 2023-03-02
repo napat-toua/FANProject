@@ -3,18 +3,28 @@ const { validationResult } = require('express-validator')
 const jwt = require("jsonwebtoken")
 const config = require('../config/index')
 
-exports.index = async(req, res, next) => {
+exports.index = async (req, res, next) => {
 
-    const users = await User.find().sort({_id:1})
-    
+    const users = await User.find().sort({ _id: 1 })
+
+    const user = users.map((users, index) => {
+        return {
+            _id: users._id,
+            name: users.name,
+            email: users.email,
+            password: users.password,
+            role: users.role,
+        }
+    })
+
     res.status(200).json({
-        data: users
+        data: user
     })
 }
 
-exports.show = async(req, res, next) => {
+exports.show = async (req, res, next) => {
 
-    try{
+    try {
 
         const { id } = req.params
 
@@ -22,28 +32,36 @@ exports.show = async(req, res, next) => {
             _id: id
         })
 
-        if(!users){
+        if (!users) {
             const error = new Error("Error: User ID not found")
             error.statusCode = 400
             throw users;
         }
-        else{
+        else {
+            const user = {
+                _id: users._id,
+                name: users.name,
+                email: users.email,
+                password: users.password,
+                role: users.role,
+            }
+
             res.status(200).json({
-                data: users
+                data: user
             })
         }
 
-    } catch ( error ){
-        next( error )
+    } catch (error) {
+        next(error)
     }
 
 }
 
-exports.register = async(req, res, next) => {
-    try{
+exports.register = async (req, res, next) => {
+    try {
         const { name, email, password } = req.body
 
-        const existEmail = await User.findOne({ email:email })
+        const existEmail = await User.findOne({ email: email })
 
         const errors = validationResult(req);
         if (!errors.isEmpty()) {
@@ -53,16 +71,16 @@ exports.register = async(req, res, next) => {
             throw error;
         }
 
-        if (existEmail){
+        if (existEmail) {
             const error = new Error("Error: This email is already registered.")
             error.statusCode = 400
             throw error;
-          }
+        }
 
         let users = new User();
         users.name = name,
-        users.email = email,
-        users.password = await users.encryptPassword(password)
+            users.email = email,
+            users.password = await users.encryptPassword(password)
 
         await users.save()
 
@@ -70,14 +88,14 @@ exports.register = async(req, res, next) => {
             message: name + ' Data Registered Successfully',
         })
     }
-    catch ( error ) {
-        next( error )
-      }
+    catch (error) {
+        next(error)
+    }
 }
 
-exports.drop = async(req, res, next) => {
+exports.drop = async (req, res, next) => {
 
-    try{
+    try {
 
         const { id } = req.params
 
@@ -94,20 +112,20 @@ exports.drop = async(req, res, next) => {
             error.statusCode = 400
             throw error;
         }
-        
+
         res.status(200).json({
             message: user.name + ' Data has been deleted'
         })
-        
-    } catch ( error ){
-        next( error )
+
+    } catch (error) {
+        next(error)
     }
 
 }
 
-exports.update = async(req, res, next) => {
+exports.update = async (req, res, next) => {
 
-    try{
+    try {
 
         const { id } = req.params
         const { name, email, password, role } = req.body
@@ -116,11 +134,11 @@ exports.update = async(req, res, next) => {
             _id: id
         })
 
-        const existEmail = await User.findOne({ email:email })
+        const existEmail = await User.findOne({ email: email })
 
-        const existId = await User.findOne({ _id : id })
+        const existId = await User.findOne({ _id: id })
 
-        if (!existId){
+        if (!existId) {
             const error = new Error("Error: User ID not found.")
             error.statusCode = 400
             throw error;
@@ -134,7 +152,7 @@ exports.update = async(req, res, next) => {
             throw error;
         }
 
-        if (existEmail&&findUsersEmail.email!=req.body.email){
+        if (existEmail && findUsersEmail.email != req.body.email) {
             const error = new Error("Error: This email is already registered.")
             error.statusCode = 400
             throw error;
@@ -143,9 +161,9 @@ exports.update = async(req, res, next) => {
         let user = new User();
         user.password = await user.encryptPassword(password)
 
-        const users = await User.updateOne({ _id : id }, {
+        const users = await User.updateOne({ _id: id }, {
             role: role,
-            name: name,
+            //name: name,
             email: email,
             password: user.password
         })
@@ -154,86 +172,87 @@ exports.update = async(req, res, next) => {
             message: name + ' Data has been modified'
         })
 
-    } catch ( error ){
-        next( error )
+    } catch (error) {
+        next(error)
     }
 }
 
 exports.login = async (req, res, next) => {
-    try{
-      const { email, password } =req.body
-  
-      //validation
-      const errors = validationResult(req);
-      if (!errors.isEmpty()) {
-          const error = new Error("Error: Insert Data Invalid")
-          error.statusCode = 422;
-          error.validation = errors.array()
-          throw error;
+    try {
+        const { email, password } = req.body
+
+        //validation
+        const errors = validationResult(req);
+        if (!errors.isEmpty()) {
+            const error = new Error("Error: Insert Data Invalid")
+            error.statusCode = 422;
+            error.validation = errors.array()
+            throw error;
         }
-  
-      const user = await User.findOne({ email:email })
-  
-      if (!user){
-        const error = new Error("Error: User not found")
-        error.statusCode = 404
-        throw error;
-      }
-  
-      const isValid = await user.checkPassword(password)
-      if (!isValid){
-        const error = new Error("Error: Password incorrect")
-        error.statusCode = 401
-        throw error;
-      }
-  
-      // creat token
-      const token = await jwt.sign({
-        id: user._id,
-        role: user.role,
-      }, config.SECRET_KEY, { expiresIn: "7 days"})
-  
-      const d = new Date(0);
-      d.setUTCSeconds(jwt.decode(token).exp);
 
-      res.status(200).json({
-        access_token: token,
-        expire_in: d,
-        token_type: 'Bearar'
-      })
+        const user = await User.findOne({ email: email })
+
+        if (!user) {
+            const error = new Error("Error: User not found")
+            error.statusCode = 404
+            throw error;
+        }
+
+        const isValid = await user.checkPassword(password)
+        if (!isValid) {
+            const error = new Error("Error: Password incorrect")
+            error.statusCode = 401
+            throw error;
+        }
+
+        // creat token
+        const token = await jwt.sign({
+            id: user._id,
+            role: user.role,
+        }, config.SECRET_KEY, { expiresIn: "7 days" })
+
+        const d = new Date(0);
+        d.setUTCSeconds(jwt.decode(token).exp);
+
+        res.status(200).json({
+            access_token: token,
+            expire_in: d,
+            token_type: 'Bearar',
+            role: user.role
+        })
 
     }
-    catch ( error ) {
-      next( error )
+    catch (error) {
+        next(error)
     }
-    
-} 
+
+}
 
 exports.profile = (req, res, next) => {
     const { role, name, email } = req.user
     res.status(200).json({
-      name: name,
-      email: email,
-      role: role
+        name: name,
+        email: email,
+        role: role
     })
 }
 
 exports.put_profile = async (req, res, next) => {
 
-    try{
+    try {
 
         const { id } = req.user
         const { name, email, password } = req.body
 
-        const existId = await User.findOne({ _id : id })
-        
-        const existEmail = await User.findOne({ email:email })
+        const existId = await User.findOne({ _id: id })
+
+        const existEmail = await User.findOne({ email: email })
 
         const findUsersEmail = await User.findOne({
             _id: id
         })
 
-        if (!existId){
+        if (!existId) {
             const error = new Error("Error: User ID not found.")
             error.statusCode = 400
             throw error;
@@ -247,16 +266,16 @@ exports.put_profile = async (req, res, next) => {
             throw error;
         }
 
-        if (existEmail&&findUsersEmail.email!=req.body.email){
+        if (existEmail && findUsersEmail.email != req.body.email) {
             const error = new Error("Error: This email is already registered.")
             error.statusCode = 400
             throw error;
         }
-        
+
         let user = new User();
         user.password = await user.encryptPassword(password)
 
-        const users = await User.updateOne({ _id : id }, {
+        const users = await User.updateOne({ _id: id }, {
             name: name,
             email: email,
             password: user.password
@@ -266,7 +285,7 @@ exports.put_profile = async (req, res, next) => {
             message: name + ' Data has been modified'
         })
 
-    } catch ( error ){
-        next( error )
+    } catch (error) {
+        next(error)
     }
 }

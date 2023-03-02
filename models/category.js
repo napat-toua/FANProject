@@ -3,11 +3,13 @@ const Schema = mongoose.Schema
 
 const categorySchema = new Schema({
     name: String, // String is shorthand for {type: String}
-    describe: String
+    describe: String,
+    user: { type: Schema.Types.ObjectId, ref: 'Users' }
   }, { 
     collection: "categorys", 
     versionKey: false, 
-    toJSON: { virtuals: true }
+    toJSON: { virtuals: true },
+    timestamps: true
   });
 
   categorySchema.virtual('products', {
